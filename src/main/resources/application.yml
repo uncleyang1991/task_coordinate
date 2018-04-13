@@ -1,0 +1,22 @@
+server:
+  port: 32743
+  session:
+    timeout: 10800
+
+spring:
+  datasource:
+    name: datasource
+    url: jdbc:mysql://123.207.140.116:3306/task_coordinate?useSSL=false
+    username: root
+    password: c327433910
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    hikari:
+      read-only: false
+      connectionTimeout: 200000
+      maxLifetime: 28770
+      maximumPoolSize: 5
+
+mybatis:
+  typeAliasesPackage: club.yanghaobo.entity
+  mapperLocations: classpath:mapper/*Mapper.xml
