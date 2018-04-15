@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>任务协作平台</title>
+
+    <link rel="stylesheet" href="css/base/jquery.dataTables.min.css">
+
+    <script src="js/base/jquery.min.js"></script>
+    <script src="js/base/jquery.dataTables.min.js"></script>
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        html,body{
+            height: 100%;
+            width: 100%;
+        }
+        .top_div{
+            height: 70px;
+            border-bottom: 1px solid #c1c1c1;
+        }
+        .top_div_right_info{
+            width: 100%;
+            height: 100%;
+            float: right;
+            position:relative;
+        }
+        .top_div_right_info>*{
+            position:absolute;
+            bottom:5px;
+        }
+        .top_div_right_info_span{
+            right: 10px;
+        }
+        .logout_btn{
+            width: 50px;
+            height: 25px;
+            text-indent: 0;
+            background-color: #2780e7;
+            border-radius: 5px;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .logout_btn:hover{
+            background-color: #3142e7;
+        }
+        .toolbar_div{
+            height: 50px;
+            display: none;
+        }
+        .createTask_btn{
+            width: 70px;
+            height: 35px;
+            text-indent: 0;
+            background-color: #2acb41;
+            border-radius: 5px;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+            margin-left: 20px;
+            margin-top: 15px;
+        }
+        .createTask_btn:hover{
+            background-color: #248d24;
+        }
+        .body_div{
+            height: 750px;
+        }
+        th{
+            text-align: left;
+            height: 30px;
+        }
+        #task_table tr:hover{
+            cursor: pointer;
+            background: #c3e5f0;
+        }
+        #task_table tr{
+            height: 50px;
+        }
+        .progress_btn{
+            width: 80px;
+            height: 25px;
+            text-indent: 0;
+            background-color: #2780e7;
+            border-radius: 5px;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .progress_btn:hover{
+            background-color: #3142e7;
+        }
+    </style>
+</head>
+<body>
+    <!--顶层栏位-->
+    <div class="top_div">
+        <div class="top_div_right_info">
+            <span class="top_div_right_info_span">
+                <span id="loginUserInfo_span"></span>
+                <button class="logout_btn" id="logout_btn">注销</button>
+            </span>
+        </div>
+    </div>
+    <!--动作栏位-->
+    <div class="toolbar_div" id="toolbar_div">
+        <button class="createTask_btn">发布任务</button>
+    </div>
+    <!--表格栏位-->
+    <div class="body_div">
+        <table class="body_div_data_table" id="task_table">
+            <thead>
+                <th><input type="checkbox"></th>
+                <th>任务名称</th>
+                <th>类　型</th>
+                <th>状　态</th>
+                <th>开始时间</th>
+                <th>发布者</th>
+                <th>进　度</th>
+                <th></th>
+            </thead>
+        </table>
+    </div>
+</body>
+<script src="js/main.js"></script>
+</html>

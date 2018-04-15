@@ -10,7 +10,9 @@ public class Task implements Serializable{
     private String type;
     private Integer isFinish;
     private Date createTime;
-    private String createId;
+    private User createUser;
+
+    private String progress;
 
     public String getTaskId() {
         return taskId;
@@ -52,11 +54,19 @@ public class Task implements Serializable{
         this.createTime = createTime;
     }
 
-    public String getCreateId() {
-        return createId;
+    public User getCreateUser() {
+        return createUser;
     }
 
-    public void setCreateId(String createId) {
-        this.createId = createId;
+    public void setCreateUser(User createUser) {
+        this.createUser = createUser;
+    }
+
+    public String getProgress() {
+        return progress;
+    }
+
+    public void setProgress(String progress) {
+        this.progress = progress;
     }
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="club.yanghaobo.dao.UserDao">
+
+    <resultMap type="club.yanghaobo.entity.User" id="userMap">
+        <id property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <association property="dept" javaType="club.yanghaobo.entity.Department">
+            <id property="deptId" column="dept_id"/>
+            <result property="deptName" column="dept_name"/>
+            <result property="sign" column="sign"/>
+        </association>
+    </resultMap>
+
+    <select id="getUserInfoByUsername" resultMap="userMap">
+        select
+            user_id,username,password,department.dept_id as dept_id,dept_name,sign
+        from
+            user,department
+        where
+            user.dept_id = department.dept_id
+        and
+            username = #{username}
+    </select>
+
+</mapper>

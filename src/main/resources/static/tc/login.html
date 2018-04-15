@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>任务协作平台</title>
+    <script src="js/base/jquery.min.js"></script>
+
+    <style>
+        *{
+            margin : 0;
+            padding: 0;
+        }
+        html{
+            height: 100%;
+        }
+        body{
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-wrap{
+            width: 300px;
+            height: 300px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+        }
+        .login-wrap:before{
+            display: block;
+            content: '';
+            width: 100%;
+            height: 8px;
+            background: -webkit-linear-gradient(left,#27ae60 0%,#27ae60  20%,
+            #8e44ad 20%,#8e44ad 40%,
+            #3498db 40%,#3498db 60%,
+            #e74c3c 60%,#e74c3c 80%,
+            #f1c40f 80%,#f1c40f 100%);
+            border-radius: 10px 10px 0 0;
+        }
+        .login-wrap h3{
+            text-align: center;
+            line-height: 80px;
+            color: #368;
+            font-size: 1.5em;
+        }
+        .login-container{
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 200px;
+        }
+        .login-container input{
+            width: 80%;
+            height: 40px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            text-indent: 1em;
+            font-size: 1em;
+        }
+        .login-container input[type='button']{
+            text-indent: 0;
+            background-color: #e74c3c;
+            font-size: 1.2em;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+        }
+        .login-container input[type='button']:hover{
+            background-color: #e73337;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrap">
+        <h3>任务协作平台</h3>
+        <form class="login-container">
+            <input id="username_input" type="text" placeholder="请输入用户名">
+            <input id="password_input" type="password" placeholder="请输入密码">
+            <input id="login_button" type="button" value="登录">
+        </form>
+    </div>
+    <script src="js/login.js"></script>
+</body>
+</html>

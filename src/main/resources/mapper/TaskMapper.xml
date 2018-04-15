@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="club.yanghaobo.dao.TaskDao">
+
+    <resultMap type="club.yanghaobo.entity.Task" id="taskMap">
+        <id property="taskId" column="task_id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="type" column="type"/>
+        <result property="isFinish" column="is_finish"/>
+        <result property="createTime" column="create_time"/>
+        <result property="progress" column="progress"/>
+        <association property="createUser" javaType="club.yanghaobo.entity.User">
+            <result property="username" column="username"/>
+            <association property="dept" javaType="club.yanghaobo.entity.Department">
+                <result property="deptName" column="dept_name"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <select id="getTaskList" resultMap="taskMap">
+        select
+            a.*
+        from
+            (select
+                task_id,task_name,type,is_finish,task.create_time as create_time,username,dept_name,
+                concat(
+                    (select count(1) from task_department where task_department.task_id = task.task_id and task_department.is_finish = 1),
+                    "/",
+                    (select count(1) from task_department where task_department.task_id = task.task_id)
+                ) as progress
+            from
+                task,user,department
+            where
+                task.create_id = user.user_id
+            and
+                user.dept_id = department.dept_id
+            order by
+                is_finish,create_time desc) a
+        limit #{start},#{length}
+    </select>
+
+    <select id="taskCount" resultType="java.lang.Integer">
+        select
+            count(1)
+        from
+            task
+    </select>
+
+</mapper>
