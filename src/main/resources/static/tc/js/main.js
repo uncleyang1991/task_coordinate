@@ -157,7 +157,7 @@ function creatTaskModalInit(){
     $("#createTask_file_name").html("");
     $("#createTask_file_size").html("");
     $("#createTask_file_progress").html("");
-    $("#createTask_file").attr("disabled", false);
+    $("#createTask_file").show();
     $("#next_btn").attr("disabled", true);
 }
 
