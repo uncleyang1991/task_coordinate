@@ -4,6 +4,10 @@ server:
     timeout: 10800
 
 spring:
+  http:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   datasource:
     name: datasource
     url: jdbc:mysql://123.207.140.116:3306/task_coordinate?useSSL=false

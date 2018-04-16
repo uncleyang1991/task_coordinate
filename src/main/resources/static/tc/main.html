@@ -10,6 +10,9 @@
     <script src="js/base/jquery.min.js"></script>
     <script src="js/base/jquery.dataTables.min.js"></script>
     <script src="js/base/bootstrap.min.js"></script>
+    <script src="js/base/jquery.ui.widget.js"></script>
+    <script src="js/base/jquery.iframe-transport.js"></script>
+    <script src="js/base/jquery.fileupload.js"></script>
 
     <style>
         *{
@@ -105,7 +108,11 @@
         .dept_select{
             height: 25px;
         }
-
+        .createTask_file{
+            color: transparent;
+            width: 72px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -114,7 +121,7 @@
         <div class="top_div_right_info">
             <span class="top_div_right_info_span">
                 <span id="loginUserInfo_span"></span>
-                <button class="createTask_btn" id="createTask_btn" data-toggle="modal" data-target="#createTaskModal">发布任务</button>
+                <button class="createTask_btn" id="createTask_btn">发布任务</button>
                 <button class="logout_btn" id="logout_btn">注销</button>
             </span>
         </div>
@@ -136,43 +143,26 @@
     </div>
 
     <!-- 发布任务模态框  -->
-    <div class="modal fade" id="createTaskModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createTaskModal" tabindex="-1"  data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="myModalLabel">发布任务</h4>
+                    <h4 class="modal-title" id="myModalLabel">发布任务-上传任务文件</h4>
                 </div>
                 <div class="modal-body">
                     <span>
                         <label>任务文件：</label>
-                        <input type="file">
+                        <input type="file" class="createTask_file" id="createTask_file" name="file">
+                        <span id="createTask_file_name"></span>
                     </span>
                     <span>
-                        <label>参与分局：</label>
-                        <select class="dept_select">
-                            <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                            <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                             <option>萨尔图分局</option>
-                        </select>
+                        <span id="createTask_file_size"></span>
+                        <span id="createTask_file_progress"></span>
                     </span>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary">确认发布</button>
+                    <button type="button" class="btn btn-primary next_btn" id="next_btn" disabled>下一步</button>
                 </div>
             </div>
         </div>
