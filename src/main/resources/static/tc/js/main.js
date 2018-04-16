@@ -1,20 +1,27 @@
-var loginUserInfo; //= {"userId":"0","username":"admin","password":null,"createTime":null,"dept":{"deptId":"0","deptName":"管理员","sign":"admin","createTime":null}};
-
-$.ajax({
-    url:"/tc/loginUserInfo.do",
-    type:"post",
-    dataType:"json",
-    success:function(responseData){
-        loginUserInfo = responseData;
-        //初始化顶部登录用户信息
-        $("#loginUserInfo_span").text("你好，"+loginUserInfo.username+"("+loginUserInfo.dept.deptName+")");
-        if(loginUserInfo.dept.sign === 'admin'){
-            $("#toolbar_div").show();
+var loginUserInfo;
+//是否为测试模式
+var isTest = true;
+if(isTest){
+    loginUserInfo ={"userId":"0","username":"admin","password":null,"createTime":null,"dept":{"deptId":"0","deptName":"管理员","sign":"admin","createTime":null}};
+    $("#loginUserInfo_span").text("你好，"+loginUserInfo.username+"("+loginUserInfo.dept.deptName+")");
+    loadTaskTableData(false);
+    $("#createTask_btn").show();
+}else {
+    $.ajax({
+        url:"/tc/loginUserInfo.do",
+        type:"post",
+        dataType:"json",
+        success:function(responseData){
+            loginUserInfo = responseData;
+            //初始化顶部登录用户信息
+            $("#loginUserInfo_span").text("你好，"+loginUserInfo.username+"("+loginUserInfo.dept.deptName+")");
+            if(loginUserInfo.dept.sign === 'admin'){
+                $("#createTask_btn").show();
+            }
+            loadTaskTableData(false);
         }
-        loadTaskTableData(false);
-    }
-});
-//$("#loginUserInfo_span").text("你好，"+loginUserInfo.username+"["+loginUserInfo.dept.deptName+"]");
+    });
+}
 
 $("#logout_btn").on("click",function(){
     if(confirm("确定要注销吗？")){
@@ -39,7 +46,7 @@ function loadTaskTableData(isSearch){
         //分页
         'paging': true,
         'bStateSave' : false,
-        'sScrollY': '750px', //支持垂直滚动
+        'sScrollY': '503px', //支持垂直滚动
         //从服务器处理分页
         'bServerSide': true,
         //查询请求action url
@@ -55,7 +62,7 @@ function loadTaskTableData(isSearch){
         //每页显示多少条数据
         'lengthChange':false,
         //每页显示数量：15条记录
-        'iDisplayLength': 15,
+        'iDisplayLength': 10,
         'bInfo' : true, //是否显示页脚信息，DataTables插件左下角显示记录数
         'sPaginationType': 'full_numbers', //详细分页组，可以支持直接跳转到某页
         'columns': [
@@ -66,7 +73,15 @@ function loadTaskTableData(isSearch){
                 return "&nbsp;&nbsp;"+data;
             }},
             {'data': 'type','width':'10%',render:function(data){
-                return "&nbsp;&nbsp;"+data;
+                var html;
+                if("excel" === data){
+                    html = "Excel表格";
+                }else if("word" === data){
+                    html = "Word文档";
+                }else{
+                    html = "未知类型";
+                }
+                return "&nbsp;&nbsp;"+html;
             }},
             {'data': 'isFinish','width':'10%',render:function(data){
                 var html;
@@ -86,17 +101,15 @@ function loadTaskTableData(isSearch){
             {'data': 'createUser','width':'12%',render:function(data){
                 return "&nbsp;&nbsp;"+data.username+"("+data.dept.deptName+")";
             }},
-            {'data': 'progress','width':'5%',render:function(data){
+            {'data': 'progress','width':'6%',render:function(data){
                 return "&nbsp;&nbsp;"+data;
             }},
-            {'data': 'isFinish','width':'20%',render:function(data){
+            {'data': 'isFinish','width':'19%',render:function(data){
                 var html = "&nbsp;&nbsp;";
-                if(data === 0){
-                    if(loginUserInfo.dept.sign === 'admin'){
-                        html += "<button class='progress_btn'>详细进度</button>";
-                    }else{
-                        html += "<button class='progress_btn'>填写</button>";
-                    }
+                if(loginUserInfo.dept.sign === 'admin'){
+                    html += "<button class='progress_btn'>详细进度</button><button class='progress_btn'>查看规则</button>";
+                }else if(data === 0){
+                    html += "<button class='progress_btn'>填写</button>";
                 }
                 return html;
             }}

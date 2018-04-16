@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="club.yanghaobo.dao.DepartmentDao">
+
+    <resultMap type="club.yanghaobo.entity.Department" id="deptMap">
+        <id property="deptId" column="dept_id"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="sign" column="sign"/>
+    </resultMap>
+
+    <select id="getAllDept" resultMap="deptMap">
+        select
+            *
+        from
+            department
+        where
+            dept_id != '0'
+    </select>
+
+</mapper>
