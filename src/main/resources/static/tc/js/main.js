@@ -245,14 +245,6 @@ $("#next_btn").on("click", function () {
             for (var i = 0, len = result.length; i < len; i++) {
                 $("#createTaskSheetSelect").append("<option>" + result[i] + "</option>");
             }
-            for (var j = 0, dept_len = dept.length; j < dept_len; j++) {
-                dept[j].rule = new Array(result.length);
-                for (var k = 0, sheet_len = result.length; k < sheet_len; k++) {
-                    dept[j].rule[k] = {
-                        sheetName:result[k]
-                    }
-                }
-            }
         }
     });
     $("#createTaskModalHead>h4").html("发布任务-分配任务");
@@ -263,24 +255,58 @@ $("#next_btn").on("click", function () {
 });
 
 //发布任务-分配任务-规则-增加按钮事件
-$("#createTaskRuleButton").on("click", function(){
+$("#createTaskRuleButton").on("click", function () {
     //获取规则模板
     var ruleTemp = $($("#createTaskRuleTemplate").html());
+    //增加一个是否确定的标志
+    ruleTemp.data("isEnter", false);
     $("#createTaskRuleDiv").append(ruleTemp);
 });
 
 //发布任务-分配任务-规则-格式选择事件
-function createTaskRuleSelect(item){
+function createTaskRuleSelect(item) {
     var selected = $(item).val();
-    if("自定义" === selected){
+    if ("自定义" === selected) {
         $(item).siblings().eq(3).show();
-    }else{
+    } else {
         $(item).siblings().eq(3).hide();
     }
 }
 
+//发布任务-分配任务-规则-确定按钮事件
+function createTaskRuleEnter(item) {
+    var parentDiv = $(item).parent();
+    var rang = $($(item).siblings()[1]);
+    var select = $($(item).siblings()[3]);
+    //检验范围格式
+    var reg = /^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/;
+    if (!reg.test(rang.val())) {
+        alert("范围表达式错误,例:C7:C19");
+        return false;
+    }
+    if (select.val() === "自定义") {
+        var flag = false;
+        var customVal = $($(item).siblings()[4]).val();
+        //自定义表达式,目前只有select,以后可以追加  @select:
+        if (customVal.substring(0, 8) === "@select:") {
+            if (customVal.substring(8).split(",").length > 1 && customVal.lastIndexOf(",") !== customVal.length - 1) {
+                $($(item).siblings()[4]).attr("disabled", "true");
+                flag = true;
+            }
+        }
+        if (!flag) {
+            alert("自定义表达式错误,例:@select:选项一,选项二");
+            return flag;
+        }
+    }
+    $(item).remove();
+    rang.attr("disabled", "true");
+    select.attr("disabled", "true");
+    parentDiv.data("isEnter", true);
+}
+
 //发布任务-分配任务-规则-删除按钮事件
-function createTaskRuleDelete(item){
+function createTaskRuleDelete(item) {
     var parentDiv = $(item).parent();
     parentDiv.remove();
 }
