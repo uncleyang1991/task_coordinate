@@ -1,4 +1,7 @@
+//当前登录的用户信息
 var loginUserInfo;
+//准备要发布的任务对象
+var newTask = {};
 //是否为测试模式
 var isTest = true;
 if (isTest) {
@@ -153,12 +156,40 @@ $("#createTask_btn").on("click", function () {
     $("#createTaskModal").modal("show");
 });
 
-function creatTaskModalInit(){
+function creatTaskModalInit() {
+    newTask = {};
+    $("#createTaskModalHead>h4").html("发布任务-上传任务文件");
     $("#createTask_file_name").html("");
     $("#createTask_file_size").html("");
     $("#createTask_file_progress").html("");
+    $("#createTaskDeptSelect").html("");
+    $("#createTaskSheetSelect").html("");
+    $("#createTaskRuleDiv").html("");
     $("#createTask_file").show();
     $("#next_btn").attr("disabled", true);
+    $("#createTaskUploadModalBody").show();
+    $("#createTaskAllotModalBody").hide();
+    $("#next_btn").show();
+    $("#enter_btn").hide();
+
+    loadDeptSelect();
+}
+
+//读取分局列表
+function loadDeptSelect() {
+    $.ajax({
+        url: "/tc/dept/list.do",
+        dataType: "json",
+        success: function (result) {
+            for (var i = 0, len = result.length; i < len; i++) {
+                var option_html = "<option value='+result[i].deptId+'>" + result[i].deptName + "</option>";
+                var option = $(option_html);
+                option.sign = result[i].sign;
+                $("#createTaskDeptSelect").append(option);
+            }
+            newTask.dept = result;
+        }
+    });
 }
 
 //发布任务-上传事件
@@ -168,12 +199,12 @@ $('#createTask_file').fileupload({
     add: function (e, data) {
         var fileName = data.originalFiles[0].name;
         var fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
-        if (fileType === "doc" || fileType === "docx" || fileType === "xls" || fileType === "xlsx") {
+        if (fileType === "xls" || fileType === "xlsx") {
             $("#createTask_file_name").html(fileName);
             $("#createTask_file_size").html("<label>大小：</label>" + tools.fileSizeOf(data.originalFiles[0].size));
             data.submit();
         } else {
-            $("#createTask_file_name").text("任务文件格式应为doc、docx、xls、xlsx");
+            $("#createTask_file_name").text("任务文件格式应为xls、xlsx");
             $("#createTask_file_size").html("");
             return false;
         }
@@ -183,11 +214,76 @@ $('#createTask_file').fileupload({
         $("#createTask_file_progress").html("，<label>进度：</label>" + progress + "%");
     },
     done: function (e, data) {
-        $("#createTask_file_progress").html("，<label>进度：</label>已上传完成");
-        $("#createTask_file").hide();
-        $("#next_btn").attr("disabled", false);
+
+        var fileName = data.originalFiles[0].name;
+        var fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
+        var result = data.result;
+        if (result.success) {
+            $("#createTask_file_progress").html("，<label>进度：</label>已上传完成");
+            $("#createTask_file").hide();
+            $("#next_btn").attr("disabled", false);
+            newTask.fileId = result.data;
+            newTask.fileType = fileType;
+        } else {
+            $("#createTask_file_progress").html("，<label>进度：</label>上传失败!");
+        }
     }
 });
+
+//发布任务-下一步按钮事件
+$("#next_btn").on("click", function () {
+    $.ajax({
+        url: "/tc/task/sheetList.do",
+        type: "post",
+        data: {
+            fileName: newTask.fileId,
+            fileType: newTask.fileType
+        },
+        dataType: "json",
+        success: function (result) {
+            var dept = newTask.dept;
+            for (var i = 0, len = result.length; i < len; i++) {
+                $("#createTaskSheetSelect").append("<option>" + result[i] + "</option>");
+            }
+            for (var j = 0, dept_len = dept.length; j < dept_len; j++) {
+                dept[j].rule = new Array(result.length);
+                for (var k = 0, sheet_len = result.length; k < sheet_len; k++) {
+                    dept[j].rule[k] = {
+                        sheetName:result[k]
+                    }
+                }
+            }
+        }
+    });
+    $("#createTaskModalHead>h4").html("发布任务-分配任务");
+    $("#createTaskUploadModalBody").hide();
+    $("#createTaskAllotModalBody").show();
+    $("#next_btn").hide();
+    $("#enter_btn").show();
+});
+
+//发布任务-分配任务-规则-增加按钮事件
+$("#createTaskRuleButton").on("click", function(){
+    //获取规则模板
+    var ruleTemp = $($("#createTaskRuleTemplate").html());
+    $("#createTaskRuleDiv").append(ruleTemp);
+});
+
+//发布任务-分配任务-规则-格式选择事件
+function createTaskRuleSelect(item){
+    var selected = $(item).val();
+    if("自定义" === selected){
+        $(item).siblings().eq(3).show();
+    }else{
+        $(item).siblings().eq(3).hide();
+    }
+}
+
+//发布任务-分配任务-规则-删除按钮事件
+function createTaskRuleDelete(item){
+    var parentDiv = $(item).parent();
+    parentDiv.remove();
+}
 
 var tools = {
     fileSizeOf: function (size) {

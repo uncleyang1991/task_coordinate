@@ -1,0 +1,104 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+html,body{
+    height: 100%;
+    width: 100%;
+}
+.top_div{
+    height: 70px;
+    border-bottom: 1px solid #c1c1c1;
+}
+.top_div_right_info{
+    width: 100%;
+    height: 100%;
+    float: right;
+    position:relative;
+}
+.top_div_right_info>*{
+    position:absolute;
+    bottom:5px;
+}
+.top_div_right_info_span{
+    right: 10px;
+}
+.logout_btn{
+    width: 50px;
+    height: 25px;
+    text-indent: 0;
+    background-color: #2780e7;
+    border-radius: 5px;
+    color: #fff;
+    border: 0;
+    cursor: pointer;
+    margin-left: 10px;
+}
+.logout_btn:hover{
+    background-color: #3142e7;
+}
+.createTask_btn{
+    display: none;
+    width: 70px;
+    height: 25px;
+    text-indent: 0;
+    background-color: #2acb41;
+    border-radius: 5px;
+    color: #fff;
+    border: 0;
+    cursor: pointer;
+    margin-left: 20px;
+    margin-top: 15px;
+}
+.enter_btn{
+    display: none;
+}
+.createTaskAllotModalBody{
+    display: none;
+}
+.modal-body>span{
+    display: block;
+    margin-bottom: 10px;
+}
+.modal-body>span>*{
+    display: inline-block;
+}
+.createTask_btn:hover{
+    background-color: #248d24;
+}
+.body_div{
+    height: 550px;
+}
+th{
+    text-align: left;
+    height: 30px;
+}
+#task_table tr:hover{
+    cursor: pointer;
+    background: #c3e5f0;
+}
+#task_table tr{
+    height: 50px;
+}
+.progress_btn{
+    width: 80px;
+    height: 25px;
+    text-indent: 0;
+    background-color: #2780e7;
+    border-radius: 5px;
+    color: #fff;
+    border: 0;
+    cursor: pointer;
+    margin-left: 10px;
+}
+.progress_btn:hover{
+    background-color: #3142e7;
+}
+select{
+    height: 23px;
+}
+.createTask_file{
+    color: transparent;
+    width: 72px;
+    margin-right: 10px;
+}

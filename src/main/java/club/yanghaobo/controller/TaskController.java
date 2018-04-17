@@ -4,6 +4,7 @@ import club.yanghaobo.entity.DataTableResult;
 import club.yanghaobo.service.ITaskService;
 import club.yanghaobo.tool.IdTool;
 import club.yanghaobo.tool.JsonTool;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -52,5 +54,17 @@ public class TaskController {
             return JsonTool.makeResultJson(false, e.getMessage());
         }
         return JsonTool.makeResultJson(true, taskId);
+    }
+
+    @RequestMapping("/sheetList.do")
+    public String sheetList(@RequestParam("fileName")String fileName, @RequestParam("fileType")String fileType){
+        if(!("xls".equals(fileType) || "xlsx".equals(fileType))){
+            return JsonTool.makeResultJson(false, "任务文件不是表格文件");
+        }
+        List<String> list = taskService.getSheetName(fileName, fileType);
+        if(list == null || list.size() == 0){
+            return JsonTool.makeResultJson(false, "任务文件表格解析失败");
+        }
+        return JsonTool.obj2json(list);
     }
 }
