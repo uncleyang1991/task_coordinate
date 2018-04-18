@@ -4,12 +4,14 @@ import club.yanghaobo.dao.TaskDao;
 import club.yanghaobo.entity.DataTableResult;
 import club.yanghaobo.entity.Task;
 import club.yanghaobo.tool.JsonTool;
+import org.apache.ibatis.annotations.Param;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,5 +61,27 @@ public class TaskServiceImpl implements ITaskService {
             return null;
         }
         return list;
+    }
+
+    @Override
+    @Transactional
+    public boolean createTask(Map<String, Object> newTaskMap) {
+        String createId = newTaskMap.get("createId").toString();
+        String fileId = newTaskMap.get("fileId").toString();
+        String fileType = newTaskMap.get("fileType").toString();
+        List<Map<String,Object>> deptList = (List<Map<String,Object>>)newTaskMap.get("dept");
+        if("xls".equals(fileType) || "xlsx".equals(fileType)){
+            //excel表格
+            newTaskMap.put("type","excel");
+            taskDao.createTask(newTaskMap);
+            for(Map<String,Object> dept:deptList){
+
+            }
+        }else if("doc".equals(fileType) || "docx".equals(fileType)){
+            //word文档
+            newTaskMap.put("type","word");
+        }
+
+        return true;
     }
 }

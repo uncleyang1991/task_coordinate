@@ -1,9 +1,11 @@
 package club.yanghaobo.controller;
 
 import club.yanghaobo.entity.DataTableResult;
+import club.yanghaobo.entity.User;
 import club.yanghaobo.service.ITaskService;
 import club.yanghaobo.tool.IdTool;
 import club.yanghaobo.tool.JsonTool;
+import com.alibaba.fastjson.JSON;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
@@ -75,5 +78,15 @@ public class TaskController {
             file.delete();
         }
         return JsonTool.makeResultJson(true, null);
+    }
+
+    @RequestMapping("/createTask.do")
+    public String createTask(HttpSession session, @RequestParam String taskJson){
+        Map<String,Object> newTaskMap = (Map<String, Object>)JSON.parse(taskJson);
+        User loginUser = (User)session.getAttribute("loginUserInfo");
+        //newTaskMap.put("createId",loginUser.getUserId());
+        newTaskMap.put("createId","0");
+        boolean flag = taskService.createTask(newTaskMap);
+        return JsonTool.makeResultJson(flag, null);
     }
 }

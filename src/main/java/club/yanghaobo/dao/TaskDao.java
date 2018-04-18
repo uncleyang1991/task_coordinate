@@ -13,4 +13,6 @@ public interface TaskDao {
     List<Task> getTaskList(@Param("start")int start, @Param("length")int length, @Param("params")Map<String, Object> params);
 
     int taskCount(@Param("params")Map<String, Object> params);
+
+    void createTask(@Param("params")Map<String, Object> params);
 }

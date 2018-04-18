@@ -48,4 +48,10 @@
             task
     </select>
 
+    <select id="createTask" parameterType="map">
+        insert into
+            task
+        values(#{params.fileId},#{params.fileName},#{params.type},0,now(),#{params.createId})
+    </select>
+
 </mapper>

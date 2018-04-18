@@ -170,7 +170,10 @@ function creatTaskModalInit() {
     $("#next_btn").attr("disabled", true);
     $("#createTaskUploadModalBody").show();
     $("#createTaskAllotModalBody").hide();
+    $("#cancel_btn").show();
     $("#next_btn").show();
+    $("#enter_btn").removeAttr("disabled");
+    $("#enter_btn").val("确认发布");
     $("#enter_btn").hide();
 
     loadDeptSelect();
@@ -239,6 +242,7 @@ $('#createTask_file').fileupload({
             $("#createTask_file_progress").html("，<label>进度：</label>已上传完成");
             $("#createTask_file").hide();
             $("#next_btn").attr("disabled", false);
+            newTask.fileName = fileName.substring(0, fileName.lastIndexOf("."));
             newTask.fileId = result.data;
             newTask.fileType = fileType;
         } else {
@@ -450,7 +454,39 @@ function createTaskRuleDelete(item) {
 
 //发布任务-确认发布按钮事件
 $("#enter_btn").on("click", function () {
-
+    var flag = false;
+    for (var i = 0, dept_len = newTask.dept.length; i < dept_len; i++) {
+        if (newTask.dept[i].sheet && newTask.dept[i].sheet.length > 0) {
+            flag = true;
+            break;
+        }
+    }
+    if (flag) {
+        $("#cancel_btn").hide();
+        $("#enter_btn").attr("disabled", "disabled");
+        $("#enter_btn").val("正在发布");
+        $.ajax({
+            url: "/tc/task/createTask.do",
+            type: "post",
+            dataType: "json",
+            data: {
+                taskJson: JSON.stringify(newTask)
+            },
+            success: function (result) {
+                if (result.success) {
+                    $("#createTaskModal").modal("hide");
+                    loadTaskTableData();
+                } else {
+                    $("#cancel_btn").show();
+                    $("#enter_btn").removeAttr("disabled");
+                    $("#enter_btn").val("确认发布");
+                    alert("发布任务失败");
+                }
+            }
+        });
+    } else {
+        alert("至少要为一个分局分配一个工作表的规则");
+    }
 });
 
 var tools = {
