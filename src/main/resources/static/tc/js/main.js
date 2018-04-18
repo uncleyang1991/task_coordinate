@@ -3,7 +3,7 @@ var loginUserInfo;
 //准备要发布的任务对象
 var newTask = {};
 //是否为测试模式
-var isTest = false;
+var isTest = true;
 if (isTest) {
     loginUserInfo = {
         "userId": "0",
