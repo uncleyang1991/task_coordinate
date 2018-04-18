@@ -3,7 +3,7 @@ var loginUserInfo;
 //准备要发布的任务对象
 var newTask = {};
 //是否为测试模式
-var isTest = true;
+var isTest = false;
 if (isTest) {
     loginUserInfo = {
         "userId": "0",
@@ -32,6 +32,7 @@ if (isTest) {
     });
 }
 
+//注销按钮事件
 $("#logout_btn").on("click", function () {
     if (confirm("确定要注销吗？")) {
         $.ajax({
@@ -175,6 +176,22 @@ function creatTaskModalInit() {
     loadDeptSelect();
 }
 
+//发布任务模态框关闭事件
+$("#createTaskModalCloseButton,#cancel_btn").on("click", function () {
+    if (confirm("确定要取消发布该任务吗？这将会删除关于此任务的所有信息")) {
+        $.ajax({
+            url: "/tc/task/cancelCreateTask.do",
+            type: "post",
+            data: {
+                fileName: newTask.fileId,
+                fileType: newTask.fileType
+            }
+        });
+        newTask = {};
+        $("#createTaskModal").modal("hide");
+    }
+});
+
 //读取分局列表
 function loadDeptSelect() {
     $.ajax({
@@ -279,12 +296,12 @@ $("#createTaskDeptSelect,#createTaskSheetSelect").on("change", function () {
             ruleTemp.data("isEnter", true);
             var children = ruleTemp.children();
             $(children[1]).val(ruleArr[k].range);
-            $(children[1]).attr("disabled","disabled");
+            $(children[1]).attr("disabled", "disabled");
             $(children[3]).val(ruleArr[k].formatType);
-            $(children[3]).attr("disabled","disabled");
-            if(ruleArr[k].formatType === "自定义"){
+            $(children[3]).attr("disabled", "disabled");
+            if (ruleArr[k].formatType === "自定义") {
                 $(children[4]).val(ruleArr[k].custom);
-                $(children[4]).attr("disabled","disabled");
+                $(children[4]).attr("disabled", "disabled");
                 $(children[4]).show();
             }
             $(children[5]).hide();
@@ -430,6 +447,11 @@ function createTaskRuleDelete(item) {
     }
     parentDiv.remove();
 }
+
+//发布任务-确认发布按钮事件
+$("#enter_btn").on("click", function () {
+
+});
 
 var tools = {
     fileSizeOf: function (size) {

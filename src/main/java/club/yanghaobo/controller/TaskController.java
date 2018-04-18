@@ -57,14 +57,23 @@ public class TaskController {
     }
 
     @RequestMapping("/sheetList.do")
-    public String sheetList(@RequestParam("fileName")String fileName, @RequestParam("fileType")String fileType){
-        if(!("xls".equals(fileType) || "xlsx".equals(fileType))){
+    public String sheetList(@RequestParam String fileName, @RequestParam String fileType) {
+        if (!("xls".equals(fileType) || "xlsx".equals(fileType))) {
             return JsonTool.makeResultJson(false, "任务文件不是表格文件");
         }
         List<String> list = taskService.getSheetName(fileName, fileType);
-        if(list == null || list.size() == 0){
+        if (list == null || list.size() == 0) {
             return JsonTool.makeResultJson(false, "任务文件表格解析失败");
         }
         return JsonTool.obj2json(list);
+    }
+
+    @RequestMapping("/cancelCreateTask.do")
+    public String cancelCreateTask(@RequestParam String fileName, @RequestParam String fileType) {
+        File file = new File("task_files" + File.separator + fileName + "." + fileType);
+        if(file.exists()){
+            file.delete();
+        }
+        return JsonTool.makeResultJson(true, null);
     }
 }
