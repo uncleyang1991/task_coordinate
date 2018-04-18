@@ -162,8 +162,8 @@ function creatTaskModalInit() {
     $("#createTask_file_name").html("");
     $("#createTask_file_size").html("");
     $("#createTask_file_progress").html("");
-    $("#createTaskDeptSelect").html("");
-    $("#createTaskSheetSelect").html("");
+    $("#createTaskDeptSelect").html("<option>请选择分局</option>");
+    $("#createTaskSheetSelect").html("<option>请选择工作表</option>");
     $("#createTaskRuleDiv").html("");
     $("#createTask_file").show();
     $("#next_btn").attr("disabled", true);
@@ -182,7 +182,7 @@ function loadDeptSelect() {
         dataType: "json",
         success: function (result) {
             for (var i = 0, len = result.length; i < len; i++) {
-                var option_html = "<option value='+result[i].deptId+'>" + result[i].deptName + "</option>";
+                var option_html = "<option>" + result[i].deptName + "</option>";
                 var option = $(option_html);
                 option.sign = result[i].sign;
                 $("#createTaskDeptSelect").append(option);
@@ -254,8 +254,52 @@ $("#next_btn").on("click", function () {
     $("#enter_btn").show();
 });
 
+//发布任务-分配任务-分局select和工作表select选择事件
+$("#createTaskDeptSelect,#createTaskSheetSelect").on("change", function () {
+    var deptVal = $("#createTaskDeptSelect").val();
+    var sheetVal = $("#createTaskSheetSelect").val();
+    var ruleArr;
+    $("#createTaskRuleDiv").html("");
+    for (var i = 0, dept_len = newTask.dept.length; i < dept_len; i++) {
+        if (deptVal === newTask.dept[i].deptName && newTask.dept[i].sheet) {
+            for (var j = 0, sheet_len = newTask.dept[i].sheet.length; j < sheet_len; j++) {
+                if (sheetVal === newTask.dept[i].sheet[j].sheetName) {
+                    ruleArr = newTask.dept[i].sheet[j].rule;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    if (ruleArr) {
+        for (var k = 0, rule_len = ruleArr.length; k < rule_len; k++) {
+            //获取规则模板
+            var ruleTemp = $($("#createTaskRuleTemplate").html());
+            //增加一个是否确定的标志
+            ruleTemp.data("isEnter", true);
+            var children = ruleTemp.children();
+            $(children[1]).val(ruleArr[k].range);
+            $(children[1]).attr("disabled","disabled");
+            $(children[3]).val(ruleArr[k].formatType);
+            $(children[3]).attr("disabled","disabled");
+            if(ruleArr[k].formatType === "自定义"){
+                $(children[4]).val(ruleArr[k].custom);
+                $(children[4]).attr("disabled","disabled");
+                $(children[4]).show();
+            }
+            $(children[5]).hide();
+            $("#createTaskRuleDiv").append(ruleTemp);
+        }
+    }
+});
+
 //发布任务-分配任务-规则-增加按钮事件
 $("#createTaskRuleButton").on("click", function () {
+    var deptVal = $("#createTaskDeptSelect").val();
+    var sheetVal = $("#createTaskSheetSelect").val();
+    if (deptVal === "请选择分局" || sheetVal === "请选择工作表") {
+        return false;
+    }
     //获取规则模板
     var ruleTemp = $($("#createTaskRuleTemplate").html());
     //增加一个是否确定的标志
@@ -276,17 +320,21 @@ function createTaskRuleSelect(item) {
 //发布任务-分配任务-规则-确定按钮事件
 function createTaskRuleEnter(item) {
     var parentDiv = $(item).parent();
-    var rang = $($(item).siblings()[1]);
+    var range = $($(item).siblings()[1]);
     var select = $($(item).siblings()[3]);
+    var custom = $($(item).siblings()[4]);
+
+    var deptSelect = $("#createTaskDeptSelect");
+    var sheetSelect = $("#createTaskSheetSelect");
     //检验范围格式
     var reg = /^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/;
-    if (!reg.test(rang.val())) {
+    if (!reg.test(range.val())) {
         alert("范围表达式错误,例:C7:C19");
         return false;
     }
     if (select.val() === "自定义") {
         var flag = false;
-        var customVal = $($(item).siblings()[4]).val();
+        var customVal = custom.val();
         //自定义表达式,目前只有select,以后可以追加  @select:
         if (customVal.substring(0, 8) === "@select:") {
             if (customVal.substring(8).split(",").length > 1 && customVal.lastIndexOf(",") !== customVal.length - 1) {
@@ -299,8 +347,53 @@ function createTaskRuleEnter(item) {
             return flag;
         }
     }
+
+    for (var i = 0, dept_len = newTask.dept.length; i < dept_len; i++) {
+        var czDept = newTask.dept[i];
+        if (deptSelect.val() === czDept.deptName) {
+            if (!czDept.sheet) {
+                czDept.sheet = new Array();
+                czDept.sheet[czDept.sheet.length] = {
+                    sheetName: sheetSelect.val(),
+                    rule: new Array()
+                };
+            }
+            var sheetFlag = false;
+            for (var j = 0, sheet_len = czDept.sheet.length; j < sheet_len; j++) {
+                var czSheet = czDept.sheet[j];
+                if (sheetSelect.val() === czDept.sheet[j].sheetName) {
+                    czSheet.rule[czSheet.rule.length] = {
+                        range: range.val(),
+                        formatType: select.val(),
+                        custom: custom.val()
+                    };
+                    sheetFlag = true;
+                    break;
+                }
+            }
+            if (!sheetFlag) {
+                czDept.sheet[czDept.sheet.length] = {
+                    sheetName: sheetSelect.val(),
+                    rule: new Array()
+                };
+                for (var k = 0, sheet1_len = czDept.sheet.length; k < sheet1_len; k++) {
+                    var czSheet_ = czDept.sheet[k];
+                    if (sheetSelect.val() === czDept.sheet[k].sheetName) {
+                        czSheet_.rule[czSheet_.rule.length] = {
+                            range: range.val(),
+                            formatType: select.val(),
+                            custom: custom.val()
+                        };
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    }
+
     $(item).remove();
-    rang.attr("disabled", "true");
+    range.attr("disabled", "true");
     select.attr("disabled", "true");
     parentDiv.data("isEnter", true);
 }
@@ -308,6 +401,33 @@ function createTaskRuleEnter(item) {
 //发布任务-分配任务-规则-删除按钮事件
 function createTaskRuleDelete(item) {
     var parentDiv = $(item).parent();
+    var deptSelect = $("#createTaskDeptSelect");
+    var sheetSelect = $("#createTaskSheetSelect");
+    var range = $($(item).siblings()[1]);
+    if (parentDiv.data("isEnter")) {
+        for (var i = 0, dept_len = newTask.dept.length; i < dept_len; i++) {
+            if (deptSelect.val() === newTask.dept[i].deptName) {
+                for (var j = 0, sheet_len = newTask.dept[i].sheet.length; j < sheet_len; j++) {
+                    if (sheetSelect.val() === newTask.dept[i].sheet[j].sheetName) {
+                        for (var k = 0, rule_len = newTask.dept[i].sheet[j].rule.length; k < rule_len; k++) {
+                            if (range.val() === newTask.dept[i].sheet[j].rule[k].range) {
+                                newTask.dept[i].sheet[j].rule.splice(k, 1);
+                                if (newTask.dept[i].sheet[j].rule.length === 0) {
+                                    newTask.dept[i].sheet.splice(j, 1);
+                                    if (newTask.dept[i].sheet.length === 0) {
+                                        delete newTask.dept[i].sheet;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
     parentDiv.remove();
 }
 
