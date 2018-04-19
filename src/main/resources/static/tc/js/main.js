@@ -3,7 +3,7 @@ var loginUserInfo;
 //准备要发布的任务对象
 var newTask = {};
 //是否为测试模式
-var isTest = true;
+var isTest = false;
 if (isTest) {
     loginUserInfo = {
         "userId": "0",
@@ -90,9 +90,9 @@ function loadTaskTableData(isSearch) {
             {
                 'data': 'type', 'width': '10%', render: function (data) {
                 var html;
-                if ("excel" === data) {
+                if ("xls" === data || "xlsx" === data) {
                     html = "Excel表格";
-                } else if ("word" === data) {
+                } else if ("doc" === data || "docx" === dta) {
                     html = "Word文档";
                 } else {
                     html = "未知类型";
@@ -102,13 +102,16 @@ function loadTaskTableData(isSearch) {
             },
             {
                 'data': 'isFinish', 'width': '10%', render: function (data) {
-                var html;
+                var span = $("<font color='#000'></font>");
+                span.data("isFinish",data);
                 if (data === 0) {
-                    html = "<font color='#f00'>未完成</font>";
+                    span.attr("color","#f00");
+                    span.html("未完成");
                 } else {
-                    html = "<font color='#00aa00'>已完成</font>";
+                    span.attr("color","#0a0");
+                    span.html("已完成");
                 }
-                return "&nbsp;&nbsp;" + html;
+                return "&nbsp;&nbsp;" + span[0].outerHTML;
             }
             },
             {
@@ -133,7 +136,7 @@ function loadTaskTableData(isSearch) {
                 'data': 'isFinish', 'width': '19%', render: function (data) {
                 var html = "&nbsp;&nbsp;";
                 if (loginUserInfo.dept.sign === 'admin') {
-                    html += "<button class='progress_btn'>详细进度</button><button class='progress_btn'>查看规则</button>";
+                    html += "<button class='progress_btn' onclick='openDetailedProgressModal(this)'>详细进度</button><button class='progress_btn'>查看规则</button>";
                 } else if (data === 0) {
                     html += "<button class='progress_btn'>填写</button>";
                 }
@@ -150,6 +153,71 @@ function loadTaskTableData(isSearch) {
         'aaSorting': []
     });
 }
+
+//打开详细进度模态框
+function openDetailedProgressModal(btn) {
+    var taskId = $(btn).parent().siblings().eq(0).children("input").val();
+    var taskName = $(btn).parent().siblings().eq(1).text();
+    $("#detailedProgressModal").data("taskId",taskId);
+    $("#detailedProgressTable").children().eq(1).html("");
+    $("#detailedProgressModal_taskName").html(taskName);
+    $("#detailedProgressModal_downloadBtn").on("click",function(){
+        location.href = "/tc/task/download.do?taskId="+taskId;
+    });
+    var finishText = $(btn).parent().siblings().eq(3).children().eq(0).text();
+    if("已完成" === finishText){
+        $("#detailedProgressModal_finishBtn").hide();
+    }else{
+        $("#detailedProgressModal_finishBtn").show();
+    }
+    $("#detailedProgressModal").modal("show");
+    $.ajax({
+        url: "/tc/task/detailedProgress.do",
+        type: "post",
+        dataType: "json",
+        data: {
+            taskId: taskId
+        },
+        success: function (result) {
+            for (var i = 0, len = result.length; i < len; i++) {
+                var finishHtml;
+                if (result[i].is_finish === 0) {
+                    finishHtml = "<font color='#f00'>未完成</font>";
+                } else if (result[i].is_finish === 1) {
+                    finishHtml = "<font color='#149a15'>已完成</font>";
+                }
+                var tr = $("<tr>" +
+                    "<td>" + result[i].dept_name + "</td>" +
+                    "<td>" + finishHtml + "</td>" +
+                    "</tr>");
+                tr.data("taskId", taskId);
+                tr.data("deptId", result[i].dept_id);
+                $("#detailedProgressTable").children().eq(1).append(tr);
+            }
+        }
+    });
+
+}
+
+//详细进度-完成此任务按钮事件
+$("#detailedProgressModal_finishBtn").on("click",function(){
+    var btn = $(this);
+    if(confirm("确定要完成此任务吗？")){
+        var taskId = $("#detailedProgressModal").data("taskId");
+        $.ajax({
+            url:"/tc/task/finishTask.do",
+            type:"post",
+            dataType:"json",
+            data:{
+                taskId:taskId
+            },
+            success:function(result){
+                btn.hide();
+                loadTaskTableData();
+            }
+        });
+    }
+});
 
 //发布任务按钮事件
 $("#createTask_btn").on("click", function () {
@@ -186,8 +254,8 @@ $("#createTaskModalCloseButton,#cancel_btn").on("click", function () {
             url: "/tc/task/cancelCreateTask.do",
             type: "post",
             data: {
-                fileName: newTask.fileId,
-                fileType: newTask.fileType
+                fileName: newTask.fileId ? newTask.fileId : "@none",
+                fileType: newTask.fileType ? newTask.fileType : "@none"
             }
         });
         newTask = {};
@@ -463,8 +531,8 @@ $("#enter_btn").on("click", function () {
     }
     if (flag) {
         $("#cancel_btn").hide();
-        $("#enter_btn").attr("disabled", "disabled");
         $("#enter_btn").val("正在发布");
+        $("#enter_btn").attr("disabled", "disabled");
         $.ajax({
             url: "/tc/task/createTask.do",
             type: "post",
@@ -475,6 +543,7 @@ $("#enter_btn").on("click", function () {
             success: function (result) {
                 if (result.success) {
                     $("#createTaskModal").modal("hide");
+                    newTask = {};
                     loadTaskTableData();
                 } else {
                     $("#cancel_btn").show();

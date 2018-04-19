@@ -102,3 +102,10 @@ select{
     width: 72px;
     margin-right: 10px;
 }
+.detailedProgressTable tbody tr:hover{
+    cursor: pointer;
+    background: #c3e5f0;
+}
+.detailedProgressTable tr{
+    height: 23px;
+}

@@ -48,10 +48,53 @@
             task
     </select>
 
-    <select id="createTask" parameterType="map">
+    <insert id="createTask" parameterType="map">
         insert into
             task
-        values(#{params.fileId},#{params.fileName},#{params.type},0,now(),#{params.createId})
+        values(#{params.fileId},#{params.fileName},#{params.fileType},0,now(),#{params.createId})
+    </insert>
+
+    <insert id="addDeptInTask">
+        insert into
+            task_department
+        values(#{taskId},#{deptId},0)
+    </insert>
+
+    <insert id="addRule">
+        insert into
+          rule
+        values(#{ruleId},#{taskId},#{deptId},#{expression})
+    </insert>
+    
+    <select id="getTaskDeptFinishInfo" resultType="map">
+        select
+            task_id,department.dept_id as dept_id,dept_name,sign,is_finish
+        from
+            task_department,
+            department
+        where
+            task_department.dept_id = department.dept_id
+        and
+            task_department.task_id = #{taskId}
+        order by
+            is_finish
     </select>
 
+    <select id="getTaskInfo" resultMap="taskMap">
+        select
+            *
+        from
+            task
+        where
+            task_id = #{taskId}
+    </select>
+    
+    <update id="finishTask">
+        update
+            task
+        set
+            is_finish = 1
+        where
+            task_id = #{taskId}
+    </update>
 </mapper>
