@@ -2,9 +2,13 @@ package club.yanghaobo.service;
 
 import club.yanghaobo.dao.TaskDao;
 import club.yanghaobo.entity.DataTableResult;
+import club.yanghaobo.entity.Rule;
+import club.yanghaobo.entity.TableCell;
 import club.yanghaobo.entity.Task;
 import club.yanghaobo.tool.IdTool;
 import club.yanghaobo.tool.JsonTool;
+import club.yanghaobo.util.POIReadExcel;
+import com.alibaba.fastjson.JSON;
 import org.apache.ibatis.annotations.Param;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -16,10 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TaskServiceImpl implements ITaskService {
@@ -97,7 +98,7 @@ public class TaskServiceImpl implements ITaskService {
                             }
                             expression = new StringBuffer(expression.substring(0, expression.length() - 1));
                             expression.append("]}");
-                            taskDao.addRule(IdTool.getUUID(),fileId,dept.get("deptId").toString(),expression.toString());
+                            taskDao.addRule(IdTool.getUUID(), fileId, dept.get("deptId").toString(), expression.toString());
                         }
 
                     }
@@ -121,4 +122,33 @@ public class TaskServiceImpl implements ITaskService {
         taskDao.finishTask(taskId);
         return true;
     }
+
+    @Override
+    public List<String> getSheetNameByDept(String taskId, String deptId) {
+
+        List<String> sheetNameList = new ArrayList<>();
+        List<Rule> rules = taskDao.getRules(taskId, deptId);
+        for (Rule rule : rules) {
+            String expression = rule.getExpression();
+            Map map = (Map) JSON.parse(expression);
+            sheetNameList.add(map.get("sheetName").toString());
+        }
+        return sheetNameList;
+    }
+
+    @Override
+    public Map<String, Object> sheetMap(String taskId, String deptId, String sheetName) {
+        Map<String, Object> result = new HashMap<>();
+
+        Rule rule = taskDao.getRuleBySheetName(taskId, deptId, sheetName);
+        Map map = (Map)JSON.parse(rule.getExpression());
+        result.put("rule",map.get("rule"));
+
+        Task task = taskDao.getTaskInfo(taskId);
+        List<List<TableCell>> sheetMap
+                = POIReadExcel.readExcelToList("task_files" + File.separator + taskId + "." + task.getType(), sheetName, true);
+        result.put("sheetMap", sheetMap);
+        return result;
+    }
+
 }

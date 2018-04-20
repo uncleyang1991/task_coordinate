@@ -138,7 +138,7 @@ function loadTaskTableData(isSearch) {
                 if (loginUserInfo.dept.sign === 'admin') {
                     html += "<button class='progress_btn' onclick='openDetailedProgressModal(this)'>详细进度</button><button class='progress_btn'>查看规则</button>";
                 } else if (data === 0) {
-                    html += "<button class='progress_btn'>填写</button>";
+                    html += "<button class='progress_btn' onclick='openTaskInputWindow(this)'>填写</button>";
                 }
                 return html;
             }
@@ -152,6 +152,13 @@ function loadTaskTableData(isSearch) {
         'sort': false,
         'aaSorting': []
     });
+}
+
+//填写任务
+function openTaskInputWindow(btn){
+    var taskId = $(btn).parent().siblings().eq(0).children("input").val();
+    var taskName =$(btn).parent().siblings().eq(1).text();
+    location.href = "sheet.html?taskId="+taskId+"&taskName="+encodeURI(encodeURI(taskName.trim()));
 }
 
 //打开详细进度模态框

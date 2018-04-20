@@ -1,0 +1,42 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+html,body{
+    height: 100%;
+    width: 100%;
+}
+
+.topBar{
+    display: none;
+    border-bottom: 1px solid #a1a1a1;
+    height: 60px;
+}
+
+.topBar button{
+    margin-top: 15px;
+    margin-right: 15px;
+}
+
+.contentDiv{
+    display: none;
+    width: 100%;
+    height: 90%;
+}
+
+.contentDiv>div{
+    width: 100%;
+    height: 93%;
+    overflow-y:auto;
+    overflow-x:auto;
+}
+
+table{
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+table>tr:hover{
+    cursor: pointer;
+    background: #c3e5f0;
+}

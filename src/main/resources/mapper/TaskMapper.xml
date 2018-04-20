@@ -97,4 +97,28 @@
         where
             task_id = #{taskId}
     </update>
+
+    <select id="getRules" resultType="club.yanghaobo.entity.Rule">
+        select
+            *
+        from
+            rule
+        where
+            task_id = #{taskId}
+        and
+            dept_id = #{deptId}
+    </select>
+    
+    <select id="getRuleBySheetName" resultType="club.yanghaobo.entity.Rule">
+        select
+            *
+        from
+            rule
+        where
+            task_id = #{taskId}
+        and
+            dept_id = #{deptId}
+        and
+            expression like CONCAT('%',#{sheetName},'%')
+    </select>
 </mapper>

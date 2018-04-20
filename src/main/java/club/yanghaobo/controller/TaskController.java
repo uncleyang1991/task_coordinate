@@ -82,50 +82,50 @@ public class TaskController {
 
     @RequestMapping("/cancelCreateTask.do")
     public String cancelCreateTask(@RequestParam String fileName, @RequestParam String fileType) {
-        if("@none".equals(fileName) && "@none".equals(fileType)){
+        if ("@none".equals(fileName) && "@none".equals(fileType)) {
             return JsonTool.makeResultJson(true, null);
         }
         File file = new File("task_files" + File.separator + fileName + "." + fileType);
-        if(file.exists()){
+        if (file.exists()) {
             file.delete();
         }
         return JsonTool.makeResultJson(true, null);
     }
 
     @RequestMapping("/createTask.do")
-    public String createTask(HttpSession session, @RequestParam String taskJson){
-        Map<String,Object> newTaskMap = (Map<String, Object>)JSON.parse(taskJson);
-        User loginUser = (User)session.getAttribute("loginUserInfo");
+    public String createTask(HttpSession session, @RequestParam String taskJson) {
+        Map<String, Object> newTaskMap = (Map<String, Object>) JSON.parse(taskJson);
+        User loginUser = (User) session.getAttribute("loginUserInfo");
         //newTaskMap.put("createId",loginUser.getUserId());
-        newTaskMap.put("createId","0");
+        newTaskMap.put("createId", "0");
         boolean flag = taskService.createTask(newTaskMap);
         return JsonTool.makeResultJson(flag, null);
     }
 
     @RequestMapping("/detailedProgress.do")
-    public String detailedProgress(@RequestParam String taskId){
+    public String detailedProgress(@RequestParam String taskId) {
         return JsonTool.obj2json(taskService.detailedProgress(taskId));
     }
 
     @RequestMapping("/download.do")
-    public ResponseEntity<InputStreamResource> download(@RequestParam String taskId) throws IOException{
+    public ResponseEntity<InputStreamResource> download(@RequestParam String taskId) throws IOException {
         Task task = taskService.getTaskInfo(taskId);
-        String filePath = "task_files"+File.separator+taskId+"."+task.getType();
+        String filePath = "task_files" + File.separator + taskId + "." + task.getType();
         FileSystemResource file = new FileSystemResource(filePath);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-        headers.add("Content-Disposition", "attachment; filename=" + URLEncoder.encode(task.getTaskName(), "UTF-8")+"."+task.getType());
+        headers.add("Content-Disposition", "attachment; filename=" + URLEncoder.encode(task.getTaskName(), "UTF-8") + "." + task.getType());
         headers.add("Pragma", "no-cache");
         headers.add("Expires", "0");
 
         String contentType = "application/octet-stream";
-        if("doc".equals(task.getType())){
+        if ("doc".equals(task.getType())) {
             contentType = "application/msword";
-        }else if("docx".equals(task.getType())){
+        } else if ("docx".equals(task.getType())) {
             contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        }else if("xls".equals(task.getType())){
+        } else if ("xls".equals(task.getType())) {
             contentType = "application/vnd.ms-excel";
-        }else if("xlsx".equals(task.getType())){
+        } else if ("xlsx".equals(task.getType())) {
             contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         }
         return ResponseEntity
@@ -137,8 +137,28 @@ public class TaskController {
     }
 
     @RequestMapping("/finishTask.do")
-    public String finishTask(@RequestParam String taskId){
+    public String finishTask(@RequestParam String taskId) {
         boolean flag = taskService.finishTask(taskId);
         return JsonTool.makeResultJson(flag, null);
+    }
+
+    @RequestMapping("/sheetNameByDept.do")
+    public String sheetNameByDept(HttpSession session, @RequestParam String taskId) {
+
+        User loginUser = (User) session.getAttribute("loginUserInfo");
+        String deptId = loginUser.getDept().getDeptId();
+
+        List<String> sheetNameList = taskService.getSheetNameByDept(taskId, deptId);
+
+        return JSON.toJSONString(sheetNameList);
+    }
+
+    @RequestMapping("/sheetMap.do")
+    public String sheetMap(HttpSession session, @RequestParam String taskId, @RequestParam String sheetName) {
+        User loginUser = (User) session.getAttribute("loginUserInfo");
+        String deptId = loginUser.getDept().getDeptId();
+
+        Map<String, Object> result = taskService.sheetMap(taskId, deptId, sheetName);
+        return JSON.toJSONString(result);
     }
 }

@@ -1,4 +1,14 @@
-package club.yanghaobo.task_coordinate;
+package club.yanghaobo.util;
+
+import club.yanghaobo.entity.TableCell;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,72 +16,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFPalette;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-/**
- * @author Devil
- * @功能描述 POI 读取 Excel 转 HTML 支持 03xls 和 07xlsx 版本  包含样式
- * @创建时间 2015/4/19 21:34
- */
 public class POIReadExcel {
 
-    /**
-     * 测试
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
+    public static List<List<TableCell>> readExcelToList(String filePath, String sheetName, boolean isWithStyle) {
 
-        String path = "E:\\qbzd\\task_files\\978fb8000d5b4f298c94094ef06974c0.xls";//E://Microsoft Excel 工作表.xlsx
-
-        String html = readExcelToHtml(path, "龙凤高清", true);
-
-        System.out.println(html);
-    }
-
-
-    /**
-     * 程序入口方法
-     *
-     * @param filePath    文件的路径
-     * @param isWithStyle 是否需要表格样式 包含 字体 颜色 边框 对齐方式
-     * @return <table>...</table> 字符串
-     */
-    public static String readExcelToHtml(String filePath, String sheetName, boolean isWithStyle) {
-
+        List<List<TableCell>> result = null;
         InputStream is = null;
-        String htmlExcel = null;
         try {
             File sourcefile = new File(filePath);
             is = new FileInputStream(sourcefile);
             Workbook wb = WorkbookFactory.create(is);
             if (wb instanceof XSSFWorkbook) {
                 XSSFWorkbook xWb = (XSSFWorkbook) wb;
-                htmlExcel = POIReadExcel.getExcelInfo(xWb, sheetName, isWithStyle);
+                result = POIReadExcel.getExcelInfo(xWb, sheetName, isWithStyle);
             } else if (wb instanceof HSSFWorkbook) {
                 HSSFWorkbook hWb = (HSSFWorkbook) wb;
-                htmlExcel = POIReadExcel.getExcelInfo(hWb, sheetName, isWithStyle);
+                result = POIReadExcel.getExcelInfo(hWb, sheetName, isWithStyle);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,34 +44,49 @@ public class POIReadExcel {
                 e.printStackTrace();
             }
         }
-        return htmlExcel;
+
+        return result;
     }
 
 
-    public static String getExcelInfo(Workbook wb, String sheetName, boolean isWithStyle) {
+    private static List<List<TableCell>> getExcelInfo(Workbook wb, String sheetName, boolean isWithStyle) {
 
-        StringBuffer sb = new StringBuffer();
-        Sheet sheet = wb.getSheet(sheetName);//获取第一个Sheet的内容
+        Sheet sheet = wb.getSheet(sheetName);
         if (sheet == null) {
-            return "工作表:" + sheetName + " 不存在";
+            return null;
         }
-        int lastRowNum = sheet.getLastRowNum();
+
         Map<String, String> map[] = getRowSpanColSpanMap(sheet);
-        Row row;       //兼容
-        Cell cell;   //兼容
+        Row row;
+        Cell cell;
+
+        int lastRowNum = sheet.getLastRowNum();
+        List<List<TableCell>> trs = new ArrayList<>(lastRowNum);
 
         for (int rowNum = sheet.getFirstRowNum(); rowNum <= lastRowNum; rowNum++) {
             row = sheet.getRow(rowNum);
+
             if (row == null) {
-                sb.append("<tr><td > &nbsp;</td></tr>");
+                TableCell tableCell = new TableCell();
+                tableCell.setHtml("<td></td>");
+                tableCell.setValue(" &nbsp;");
+                List<TableCell> tr = new ArrayList<>(1);
+                tr.add(tableCell);
+                trs.add(tr);
                 continue;
             }
-            sb.append("<tr>");
+
             int lastColNum = row.getLastCellNum();
+            List<TableCell> tds = new ArrayList<>(lastColNum);
             for (int colNum = 0; colNum < lastColNum; colNum++) {
+                StringBuffer td_sb = new StringBuffer();
+
                 cell = row.getCell(colNum);
+                TableCell tableCell = new TableCell();
                 if (cell == null) {    //特殊情况 空白的单元格会返回null
-                    sb.append("<td>&nbsp;</td>");
+                    tableCell.setHtml("<td></td>");
+                    tableCell.setValue(" &nbsp;");
+                    tds.add(tableCell);
                     continue;
                 }
 
@@ -121,31 +98,33 @@ public class POIReadExcel {
                     int bottomeCol = Integer.valueOf(pointString.split(",")[1]);
                     int rowSpan = bottomeRow - rowNum + 1;
                     int colSpan = bottomeCol - colNum + 1;
-                    sb.append("<td rowspan= '" + rowSpan + "' colspan= '" + colSpan + "' ");
+                    td_sb.append("<td rowspan= '" + rowSpan + "' colspan= '" + colSpan + "' ");
                 } else if (map[1].containsKey(rowNum + "," + colNum)) {
                     map[1].remove(rowNum + "," + colNum);
                     continue;
                 } else {
-                    sb.append("<td ");
+                    td_sb.append("<td ");
                 }
 
                 //判断是否需要样式
                 if (isWithStyle) {
-                    dealExcelStyle(wb, sheet, cell, sb);//处理单元格样式
+                    dealExcelStyle(wb, sheet, cell, td_sb);//处理单元格样式
                 }
 
-                sb.append(">");
+                td_sb.append(">");
                 if (stringValue == null || "".equals(stringValue.trim())) {
-                    sb.append(" &nbsp; ");
+                    td_sb.append(" &nbsp; ");
                 } else {
                     // 将ascii码为160的空格转换为html下的空格（&nbsp;）
-                    sb.append(stringValue.replace(String.valueOf((char) 160), "&nbsp;"));
+                    tableCell.setValue(stringValue.replace(String.valueOf((char) 160), "&nbsp;"));
                 }
-                sb.append("</td>");
+                td_sb.append("</td>");
+                tableCell.setHtml(td_sb.toString());
+                tds.add(tableCell);
             }
-            sb.append("</tr>");
+            trs.add(tds);
         }
-        return sb.toString();
+        return trs;
     }
 
     private static Map<String, String>[] getRowSpanColSpanMap(Sheet sheet) {

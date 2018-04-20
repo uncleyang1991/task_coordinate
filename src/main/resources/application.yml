@@ -1,7 +1,7 @@
 server:
   port: 32743
   session:
-    timeout: 10800
+    timeout: 43200
 
 spring:
   http:
