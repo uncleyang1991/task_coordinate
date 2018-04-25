@@ -25,4 +25,8 @@ public interface ITaskService {
     List<String> getSheetNameByDept(String taskId, String deptId);
 
     Map<String, Object> sheetMap(String taskId, String deptId, String sheetName);
+
+    boolean saveSheet(Map<String, Object> inputMap) throws Exception;
+
+    boolean finishTaskInput(Map<String, Object> inputMap) throws Exception;
 }

@@ -24,22 +24,18 @@ public class POIReadExcel {
 
         List<List<TableCell>> result = null;
         InputStream is = null;
+        Workbook wb = null;
         try {
             File sourcefile = new File(filePath);
             is = new FileInputStream(sourcefile);
-            Workbook wb = WorkbookFactory.create(is);
-            if (wb instanceof XSSFWorkbook) {
-                XSSFWorkbook xWb = (XSSFWorkbook) wb;
-                result = POIReadExcel.getExcelInfo(xWb, sheetName, isWithStyle);
-            } else if (wb instanceof HSSFWorkbook) {
-                HSSFWorkbook hWb = (HSSFWorkbook) wb;
-                result = POIReadExcel.getExcelInfo(hWb, sheetName, isWithStyle);
-            }
+            wb = WorkbookFactory.create(is);
+            result = POIReadExcel.getExcelInfo(wb, sheetName, isWithStyle);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
                 is.close();
+                wb.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

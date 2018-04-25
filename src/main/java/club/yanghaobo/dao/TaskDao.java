@@ -30,4 +30,6 @@ public interface TaskDao {
     List<Rule> getRules(@Param("taskId") String taskId, @Param("deptId") String deptId);
 
     Rule getRuleBySheetName(@Param("taskId") String taskId, @Param("deptId") String deptId, @Param("sheetName") String sheetName);
+
+    int finishTaskInput(@Param("taskId") String taskId, @Param("deptId") String deptId);
 }

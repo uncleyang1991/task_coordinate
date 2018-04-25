@@ -98,20 +98,22 @@ function drawTable(sheetName, result) {
         for (var x = 0, x_len = tr_arr.length; x < x_len; x++) {
             var value = tr_arr[x].value;
             var td = $(tr_arr[x].html);
-
+            td.html("");
             //加入规则
             for (var rule_index = 0, len = ruleTemp.length; rule_index < len; rule_index++) {
                 rule = ruleTemp[rule_index];
                 if (x >= rule.fromX && x <= rule.toX && y >= rule.fromY && y <= rule.toY) {
+                    td.attr("align","left");
+                    td.attr("valign","middle");
                     var formatType = rule.formatType;
                     var com;
                     if ("是或否" === formatType) {
                         com = $("<select><option " + (value === "是" ? "selected" : "") + ">是</option><option " + (value === "否" ? "selected" : "") + ">否</option></select>");
                     } else if ("数字" === formatType) {
-                        com = $("<input type='number' style='width: 90%;'>");
+                        com = $("<input type='number' style='width: 95%;'>");
                         com.val(value);
                     } else if ("文本" === formatType) {
-                        com = $("<input type='text' style='width: 90%;'>");
+                        com = $("<input type='text' style='width: 95%;'>");
                         com.val(value);
                     } else if ("自定义" === formatType) {
                         var custom = rule.custom;
@@ -137,6 +139,7 @@ function drawTable(sheetName, result) {
     }
 
     //启用保存和完成按钮
+    $("#saveBtn").text("保存");
     $("#saveBtn").removeAttr("disabled");
     $("#finishBtn").removeAttr("disabled");
 }
@@ -167,7 +170,49 @@ $("#returnBtn").on("click", function () {
 //保存按钮事件
 $("#saveBtn").on("click", function () {
     var inputMap = getInputMap();
-    
+    $.ajax({
+        url:"/tc/task/saveTask.do",
+        type:"post",
+        dataType:"json",
+        data:{
+            obj:JSON.stringify(inputMap)
+        },
+        success:function(result){
+            $("#saveResultSpan").show();
+            if(result.success){
+                $("#saveResultSpan").css("color","#26A13D");
+                $("#saveResultSpan").text("保存成功");
+            }else{
+                $("#saveResultSpan").css("color","#f00");
+                $("#saveResultSpan").text("保存失败,请重试");
+            }
+            setTimeout(function(){
+                $("#saveResultSpan").fadeOut("slow");
+            },2000);
+        }
+    });
+});
+
+//完成填写按钮事件
+$("#finishBtn").on("click",function(){
+    if(confirm("确定要完成填写吗？确定后将无法继续填写该任务")){
+        var inputMap = getInputMap();
+        $.ajax({
+            url:"/tc/task/finishTaskInput.do",
+            type:"post",
+            dataType:"json",
+            data:{
+                obj:JSON.stringify(inputMap)
+            },
+            success:function(result){
+                if(result.success){
+                    location.href = "main.html";
+                }else{
+                    alert("提交出错");
+                }
+            }
+        });
+    }
 });
 
 function getInputMap() {
@@ -189,7 +234,7 @@ function getInputMap() {
                     y:td.data("y"),
                     value:$(inputs[i]).val()
                 });
-                td.data("isChange",false);
+                //td.data("isChange",false);
             }
         }
         inputMap.changeInput = changeInput;

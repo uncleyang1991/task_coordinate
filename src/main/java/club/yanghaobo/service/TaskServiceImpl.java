@@ -11,8 +11,10 @@ import club.yanghaobo.util.POIReadExcel;
 import com.alibaba.fastjson.JSON;
 import org.apache.ibatis.annotations.Param;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -50,22 +54,31 @@ public class TaskServiceImpl implements ITaskService {
     public List<String> getSheetName(String fileName, String fileType) {
         List<String> list = new ArrayList<>();
         File file = new File("task_files/" + fileName + "." + fileType);
+        Workbook workbook = null;
+        FileInputStream fis = null;
         try {
-            Workbook workbook;
+            fis = new FileInputStream(file);
             if ("xls".equals(fileType)) {
-                workbook = new HSSFWorkbook(new FileInputStream(file));
+                workbook = new HSSFWorkbook(fis);
             } else {
-                workbook = new XSSFWorkbook(new FileInputStream(file));
+                workbook = new XSSFWorkbook(fis);
             }
             Iterator<Sheet> iter = workbook.sheetIterator();
             while (iter.hasNext()) {
                 Sheet sheet = iter.next();
                 list.add(sheet.getSheetName());
             }
-            workbook.close();
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            try {
+                fis.close();
+                workbook.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return list;
     }
@@ -141,8 +154,8 @@ public class TaskServiceImpl implements ITaskService {
         Map<String, Object> result = new HashMap<>();
 
         Rule rule = taskDao.getRuleBySheetName(taskId, deptId, sheetName);
-        Map map = (Map)JSON.parse(rule.getExpression());
-        result.put("rule",map.get("rule"));
+        Map map = (Map) JSON.parse(rule.getExpression());
+        result.put("rule", map.get("rule"));
 
         Task task = taskDao.getTaskInfo(taskId);
         List<List<TableCell>> sheetMap
@@ -151,4 +164,58 @@ public class TaskServiceImpl implements ITaskService {
         return result;
     }
 
+    @Override
+    public boolean saveSheet(Map<String, Object> obj) throws Exception {
+        String taskId = obj.get("taskId").toString();
+        Task task = taskDao.getTaskInfo(taskId);
+        String taskType = task.getType();
+
+        File taskFile = new File("task_files" + File.separator + taskId + "." + taskType);
+        FileInputStream fis = new FileInputStream(taskFile);
+        List<Map<String, Object>> inputMap = (List<Map<String, Object>>) obj.get("inputMap");
+        Workbook wb = WorkbookFactory.create(fis);
+        for (Map<String, Object> sheetInputMap : inputMap) {
+            String sheetName = sheetInputMap.get("sheetName").toString();
+            Sheet sheet = wb.getSheet(sheetName);
+            List<Map<String, Object>> changeInputList = (List<Map<String, Object>>) sheetInputMap.get("changeInput");
+            for (int i = 0, len = changeInputList.size(); i < len; i++) {
+                Map<String, Object> changeInput = changeInputList.get(i);
+                Integer x = Integer.parseInt(changeInput.get("x").toString());
+                Integer y = Integer.parseInt(changeInput.get("y").toString());
+                String value = changeInput.get("value").toString();
+                Cell cell = sheet.getRow(y).getCell(x);
+                try{
+                    if(cell == null){
+                        sheet.getRow(y).createCell(x).setCellValue(Integer.parseInt(value));
+                    }else{
+                        cell.setCellValue(Integer.parseInt(value));
+                    }
+                }catch(NumberFormatException e){
+                    if(cell == null){
+                        sheet.getRow(y).createCell(x).setCellValue(value);
+                    }else{
+                        cell.setCellValue(value);
+                    }
+                }
+            }
+        }
+        FileOutputStream fos = new FileOutputStream(taskFile);
+        wb.write(fos);
+        fos.close();
+        fis.close();
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean finishTaskInput(Map<String, Object> obj) throws Exception {
+        String taskId = obj.get("taskId").toString();
+        String deptId = obj.get("deptId").toString();
+        int result = taskDao.finishTaskInput(taskId, deptId);
+        if(result != 1){
+            throw new Exception("提交任务出错");
+        }
+        saveSheet(obj);
+        return true;
+    }
 }

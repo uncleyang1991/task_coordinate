@@ -100,13 +100,19 @@
 
     <select id="getRules" resultType="club.yanghaobo.entity.Rule">
         select
-            *
+            rule.task_id,rule.dept_id,rule.expression
         from
-            rule
+            rule,task_department
         where
-            task_id = #{taskId}
+            rule.task_id = task_department.task_id
         and
-            dept_id = #{deptId}
+            rule.dept_id = task_department.dept_id
+        and
+            task_department.is_finish = 0
+        and
+            rule.task_id = #{taskId}
+        and
+            rule.dept_id = #{deptId}
     </select>
     
     <select id="getRuleBySheetName" resultType="club.yanghaobo.entity.Rule">
@@ -121,4 +127,15 @@
         and
             expression like CONCAT('%',#{sheetName},'%')
     </select>
+
+    <update id="finishTaskInput">
+        update
+            task_department
+        set
+            is_finish = 1
+        where
+            task_id = #{taskId}
+        and
+            dept_id = #{deptId}
+    </update>
 </mapper>

@@ -19,7 +19,7 @@ spring:
       read-only: false
       connectionTimeout: 200000
       maxLifetime: 28770
-      maximumPoolSize: 5
+      maximumPoolSize: 20
 
 mybatis:
   typeAliasesPackage: club.yanghaobo.entity

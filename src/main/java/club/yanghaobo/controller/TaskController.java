@@ -7,6 +7,7 @@ import club.yanghaobo.service.ITaskService;
 import club.yanghaobo.tool.IdTool;
 import club.yanghaobo.tool.JsonTool;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.parser.JSONToken;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -160,5 +161,30 @@ public class TaskController {
 
         Map<String, Object> result = taskService.sheetMap(taskId, deptId, sheetName);
         return JSON.toJSONString(result);
+    }
+
+    @RequestMapping("/saveTask.do")
+    public String saveTask(@RequestParam Map<String, Object> obj) {
+        try {
+            taskService.saveSheet((Map<String, Object>)JSON.parse(obj.get("obj").toString()));
+            return JsonTool.makeResultJson(true, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return JsonTool.makeResultJson(false, null);
+    }
+
+    @RequestMapping("/finishTaskInput.do")
+    public String finishTaskInput(HttpSession session,@RequestParam Map<String, Object> obj){
+        try {
+
+            Map<String, Object> params = (Map<String, Object>)JSON.parse(obj.get("obj").toString());
+            params.put("deptId",((User)session.getAttribute("loginUserInfo")).getDept().getDeptId());
+            taskService.finishTaskInput(params);
+            return JsonTool.makeResultJson(true, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return JsonTool.makeResultJson(false, null);
     }
 }
