@@ -10,7 +10,7 @@ spring:
       max-request-size: 100MB
   datasource:
     name: datasource
-    url: jdbc:mysql://123.207.140.116:3306/task_coordinate?useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/task_coordinate?useSSL=false
     username: root
     password: c327433910
     type: com.zaxxer.hikari.HikariDataSource
